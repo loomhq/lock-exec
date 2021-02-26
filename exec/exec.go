@@ -19,7 +19,7 @@ const (
 
 	heartBeatDuration = 1 // seconds
 
-	minRandomSleep = 1 // seconds
+	minRandomSleep = 1000 // milliseconds - 1second
 )
 
 var execCommand = exec.Command
@@ -127,11 +127,13 @@ func runExec(command string) (string, error) {
 // randomized effect by sleeping for the random interval.
 func randomizeSleep(i int) {
 	rand.Seed(time.Now().UnixNano())
-	r := minRandomSleep + rand.Intn(i-minRandomSleep+1) // ensures that the random range is [1, i]. To avoid sleeping for 0 seconds.
+	ms := i * 1000
+	offsetMS := 100                                             // milliseconds
+	r := minRandomSleep + rand.Intn(ms-minRandomSleep+offsetMS) // ensures that the random range is [1, i]. To avoid sleeping for 0 seconds (0 ms).
 
-	logrus.Infof("Randomized execution. Sleeping for %d seconds.", r)
+	logrus.Infof("Randomized execution. Sleeping for %d milliseconds.", r)
 
-	time.Sleep(time.Duration(r) * time.Second)
+	time.Sleep(time.Duration(r) * time.Millisecond)
 }
 
 // sleepBy takes a int input, and sleeps for that duration
