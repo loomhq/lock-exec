@@ -77,17 +77,18 @@ func (d *Exec) Run(tableName string, keyName string, command string, sleepStartR
 		"command": command,
 	}).Info("Executing command")
 	out, err := runExec(command)
-	if err != nil {
-		return err
-	}
 
-	// Print output
+	// Always print output, regardless of error
 	lines := strings.Split(out, "\n")
 	for _, l := range lines {
 		logrus.WithFields(logrus.Fields{
 			"command": command,
 			"line":    l,
 		}).Info("Command output")
+	}
+
+	if err != nil {
+		return err
 	}
 
 	if holdLockBy > 0 {
@@ -116,7 +117,7 @@ func runExec(command string) (string, error) {
 
 	stdoutStderr, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", err
+		return string(stdoutStderr), err
 
 	}
 	return string(stdoutStderr), nil
