@@ -76,19 +76,19 @@ func (d *Exec) Run(tableName string, keyName string, command string, sleepStartR
 	logrus.WithFields(logrus.Fields{
 		"command": command,
 	}).Info("Executing command")
-	out, err := runExec(command)
+	out, cmdErr := runExec(command)
+
+	// Remove the trailing newline (and any other extraneous whitespace)
+	// so they don't pollute the log output.
+	trimedOutput := strings.TrimSpace(out)
 
 	// Always print output, regardless of error
-	lines := strings.Split(out, "\n")
+	lines := strings.Split(trimedOutput, "\n")
 	for _, l := range lines {
 		logrus.WithFields(logrus.Fields{
 			"command": command,
 			"line":    l,
 		}).Info("Command output")
-	}
-
-	if err != nil {
-		return err
 	}
 
 	if holdLockBy > 0 {
@@ -105,7 +105,9 @@ func (d *Exec) Run(tableName string, keyName string, command string, sleepStartR
 	}
 	logrus.Info("Lock released")
 
-	return nil
+	// If there were no locking errors,
+	// fallback to returning the error from the command.
+	return cmdErr
 }
 
 // RunCommand executes the command.
