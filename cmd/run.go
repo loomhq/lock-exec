@@ -34,16 +34,7 @@ log and return exit code of the command.`,
 		}
 
 		if err := e.Run(tableName, keyName, shellCommand, sleepStartRandom, holdLockBy); err != nil {
-			// dynamolock.LockNotGrantedError doesn't export the error so this is the next best we can do.
-			// This is obviously super fragile (i.e if the error msg wording is updated, this fails)
-			lockFailedErr := "Didn't acquire lock because it is locked and request is configured not to retry."
-
-			// Don't consider errors due to lock contention as failures
-			if err.Error() == lockFailedErr {
-				logrus.Warning(err)
-			} else {
-				logrus.Fatal(err)
-			}
+			logrus.Fatal(err)
 		}
 	},
 }

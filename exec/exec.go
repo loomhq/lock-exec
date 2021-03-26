@@ -68,7 +68,16 @@ func (d *Exec) Run(tableName string, keyName string, command string, sleepStartR
 		dynamolock.FailIfLocked(),
 	)
 	if err != nil {
-		return err
+		// dynamolock.LockNotGrantedError doesn't export the error so this is the next best thing we can do.
+		// This is obviously super fragile (i.e if the error msg wording is updated, this fails)
+		lockFailedErr := "Didn't acquire lock because it is locked and request is configured not to retry."
+		if err.Error() != lockFailedErr {
+			return err
+		}
+
+		// We still want to exit early, just not as an error.
+		logrus.Warning(lockFailedErr)
+		return nil
 	}
 	logrus.Info("Lock acquired")
 
