@@ -72,7 +72,7 @@ func (d *Exec) Run(tableName string, keyName string, command string, sleepStartR
 			return err
 		}
 
-		// We still want to exit early, just not as an error.
+		// Exit early, just not as an error.
 		logrus.Warning(err)
 		return nil
 	}
