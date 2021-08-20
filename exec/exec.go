@@ -24,13 +24,12 @@ const (
 
 var execCommand = exec.Command
 
-// Exec is a struct used to work with dynamo client interface
+// Exec is a struct used to work with dynamo client interface.
 type Exec struct {
 	dynamodbiface.DynamoDBAPI
 }
 
-// NewDynamoClient returns a Dynamo struct with client
-// session
+// NewDynamoClient returns a Dynamo struct with client session.
 func NewDynamoClient(awsRegionName string) (*Exec, error) {
 	sess := utils.AWSSession(awsRegionName)
 	dynamoClient := dynamodb.New(sess)
@@ -45,7 +44,7 @@ func NewDynamoClient(awsRegionName string) (*Exec, error) {
 // If sleepStartRandom & holdLockBy have non-zero values, it accordingly
 // introduces randomized sleep before start and holds the lock by that duration
 // before stop.
-func (d *Exec) Run(tableName string, keyName string, command string, sleepStartRandom int, holdLockBy int) error {
+func (d *Exec) Run(tableName string, keyName string, command string, sleepStartRandom int, holdLockBy int) error { //nolint:funlen
 	if sleepStartRandom > 0 {
 		randomizeSleep(sleepStartRandom)
 	}
@@ -74,6 +73,7 @@ func (d *Exec) Run(tableName string, keyName string, command string, sleepStartR
 
 		// Exit early, just not as an error.
 		logrus.Warning(err)
+
 		return nil
 	}
 	logrus.Info("Lock acquired")
@@ -117,7 +117,7 @@ func (d *Exec) Run(tableName string, keyName string, command string, sleepStartR
 }
 
 // RunCommand executes the command.
-// It returns the output into STDOUT
+// It returns the output into STDOUT.
 func runExec(command string) (string, error) {
 	args := strings.Fields(command)
 
@@ -126,8 +126,8 @@ func runExec(command string) (string, error) {
 	stdoutStderr, err := cmd.CombinedOutput()
 	if err != nil {
 		return string(stdoutStderr), err
-
 	}
+
 	return string(stdoutStderr), nil
 }
 
@@ -137,14 +137,14 @@ func randomizeSleep(i int) {
 	rand.Seed(time.Now().UnixNano())
 	ms := i * 1000
 	offsetMS := 100                                             // milliseconds
-	r := minRandomSleep + rand.Intn(ms-minRandomSleep+offsetMS) // ensures that the random range is [1, i]. To avoid sleeping for 0 seconds (0 ms).
+	r := minRandomSleep + rand.Intn(ms-minRandomSleep+offsetMS) //nolint:gosec // ensures that the random range is [1, i]. To avoid sleeping for 0 seconds (0 ms).
 
 	logrus.Infof("Randomized execution. Sleeping for %d milliseconds.", r)
 
 	time.Sleep(time.Duration(r) * time.Millisecond)
 }
 
-// sleepBy takes a int input, and sleeps for that duration
+// sleepBy takes a int input, and sleeps for that duration.
 func sleepBy(i int) {
 	logrus.Infof("Holding lock - Sleeping for %d seconds.", i)
 

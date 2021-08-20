@@ -8,13 +8,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Dynamo is a struct used to work with dynamo client interface
+// Dynamo is a struct used to work with dynamo client interface.
 type Dynamo struct {
 	dynamodbiface.DynamoDBAPI
 }
 
-// NewDynamoClient returns a Dynamo struct with client
-// session
+// NewDynamoClient returns a Dynamo struct with client session.
 func NewDynamoClient(awsRegionName string) *Dynamo {
 	sess := utils.AWSSession(awsRegionName)
 
@@ -35,8 +34,7 @@ func (d *Dynamo) ReleaseLock(keyName string, tableName string) error {
 		TableName: aws.String(tableName),
 	}
 
-	_, err := d.DeleteItem(input)
-	if err != nil {
+	if _, err := d.DeleteItem(input); err != nil {
 		return err
 	}
 
@@ -44,5 +42,6 @@ func (d *Dynamo) ReleaseLock(keyName string, tableName string) error {
 		"key":   keyName,
 		"table": tableName,
 	}).Info("Releasing lock")
+
 	return nil
 }

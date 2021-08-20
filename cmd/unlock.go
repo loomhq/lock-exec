@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// unlockCmd represents the unlock command
+// unlockCmd represents the unlock command.
 var unlockCmd = &cobra.Command{
 	Use:   "unlock",
 	Short: "Force release an already acquired lock using key name",
