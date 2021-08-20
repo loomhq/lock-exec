@@ -12,7 +12,7 @@ var keyName string
 var tableName string
 var regionName string
 
-// rootCmd represents the base command when called without any subcommands
+// rootCmd represents the base command when called without any subcommands.
 var rootCmd = &cobra.Command{
 	Use:   "lock-exec",
 	Short: "A CLI tool for running any shell based commands in a distributed environment with DynamoDB locking",

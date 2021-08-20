@@ -7,11 +7,11 @@ import (
 )
 
 var (
-	// Version is defined at compile time via -ldflags
+	// Version is defined at compile time via -ldflags.
 	Version = "undefined1"
 )
 
-// unlockCmd represents the unlock command
+// unlockCmd represents the unlock command.
 var versionkCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print version",

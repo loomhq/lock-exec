@@ -10,7 +10,7 @@ var shellCommand string
 var sleepStartRandom int
 var holdLockBy int
 
-// runCmd represents the run command
+// runCmd represents the run command.
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run a shell command with acquire lock",

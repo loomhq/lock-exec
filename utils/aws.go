@@ -6,14 +6,14 @@ import (
 )
 
 const (
-	// Region is default AWS region when none provided
+	// Region is default AWS region when none provided.
 	Region = "us-west-2"
 
-	// TableName is the default table name when none provided
+	// TableName is the default table name when none provided.
 	TableName = "lock-exec"
 )
 
-// AWSSession generates an aws api session in us-west-2
+// AWSSession generates an aws api session in us-west-2.
 func AWSSession(region string) *session.Session {
 	return session.Must(session.NewSessionWithOptions(session.Options{
 		Config: aws.Config{
