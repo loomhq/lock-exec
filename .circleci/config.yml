@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   go: circleci/go@1.3.0
-  loom-go: loomhq/go@0.2.0
+  loom-go: loomhq/go@5.0.0
   loom-docker: loomhq/docker@0.0.5
   docker: circleci/docker@1.0.1
 
