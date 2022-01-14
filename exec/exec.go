@@ -1,6 +1,7 @@
 package exec
 
 import (
+	"fmt"
 	"math/rand"
 	"os/exec"
 	"strings"
@@ -49,11 +50,13 @@ func (d *Exec) Run(tableName string, keyName string, command string, sleepStartR
 		randomizeSleep(sleepStartRandom)
 	}
 
+	owner := fmt.Sprintf("for: %s, at: %s", keyName, time.Now().UTC().String())
 	dl, err := dynamolock.New(
 		d,
 		tableName,
 		dynamolock.WithLeaseDuration(leaseDuration*time.Second),
 		dynamolock.WithHeartbeatPeriod(heartBeatDuration*time.Second),
+		dynamolock.WithOwnerName(owner),
 	)
 	if err != nil {
 		return err
