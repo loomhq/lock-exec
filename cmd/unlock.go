@@ -1,23 +1,24 @@
 package cmd
 
 import (
-	"github.com/loomhq/lock-exec/lock"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
-// unlockCmd represents the unlock command.
-var unlockCmd = &cobra.Command{
-	Use:   "unlock",
-	Short: "Force release an already acquired lock using key name",
-	Run: func(cmd *cobra.Command, args []string) {
-		c := lock.NewDynamoClient(regionName)
-		if err := c.ReleaseLock(keyName, tableName); err != nil {
-			logrus.Fatal(err)
-		}
-	},
-}
+// newUnlockCmd creates a command for unlocking locked keys.
+func (c *cli) newUnlockCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "unlock <key>",
+		Short:   "unlock a currently locked key",
+		Example: "lock-exec unlock examplekey",
+		Args:    cobra.ExactArgs(1),
 
-func init() {
-	rootCmd.AddCommand(unlockCmd)
+		Run: func(cmd *cobra.Command, args []string) {
+			locker := c.newLocker()
+
+			err := locker.Unlock(c.cmd.Context(), args[0])
+			c.fatalErr(err, "failed to unlock key")
+		},
+	}
+
+	return cmd
 }

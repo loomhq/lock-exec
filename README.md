@@ -1,117 +1,72 @@
-A CLI tool for running any shell based commands in a distributed environment with DynamoDB locking.
+# Lock Exec
+
+`lock-exec` is a CLI that makes it easy to run at-most-once commands in a distributed environment. At Loom we run multiple identical Kubernetes clusters and we use `lock-exec` to ensure that Kubernetes cron jobs only run in a single cluster. `lock-exec` uses dynamodb to lock on a user specified key, run the input command, and then unlock the key.
 
 ## Requirements
 
-- Go 1.14+
-- DynamoDB Table
-  - Ensure partition key is name `key`. An upstream requirement from `dynamolock`/
+You must already be authenticated to AWS with a default region. `lock-exec` uses [`config.LoadDefaultConfig`](https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/config#LoadDefaultConfig) to load AWS credentials using the standard credential chain and does not currently support any direct method of authentication.
 
-## Getting Started
+Additionally, `lock-exec` requires a dynamodb table to use for locking. This table must have a partition key named `id` that stores the lock keys. The default table name is `lock-exec`. If you use a different table name you must specify it explictly using the `--table` flag.
 
-```
- go get -u loomhq/lock-exec
-```
+### Required IAM Permissions
 
-## Defaults
-
-- DynamoDB table name: `lock-exec`
-- AWS Region: `us-west-2`
-
-### Examples
-```
-A CLI tool for running any shell based commands in a distributed environment with DynamoDB locking
-
-Usage:
-  lock-exec [command]
-
-Available Commands:
-  help        Help about any command
-  run         Run a shell command with acquire lock
-  unlock      Force release an already acquired lock using key name
-
-Flags:
-  -h, --help            help for lock-exec
-  -k, --key string      Name of the key (required)
-  -r, --region string   AWS Region Name (default: "us-west-2")
-  -t, --table string    Table Name (default: "lock-exec")
-
-Use "lock-exec [command] --help" for more information about a command.
-```
-
-**Key name and command**
-```
-lock-exec run -k job-runner-foo -c "/usr/local/bin/do-something"
-```
-
-**Key name, region, table command**
-```
-lock-exec run-k job-runner-foo -r "us-west-2" -t "lock-exec" -c "/usr/local/bin/do-something"
-```
-
-## Overhead
-- CPU: <1%
-- Mem/RSS: ~30MB
-
-Tested on local MacOS machine.
-
-## Required DynamoDB Actions
 The following IAM permissions are required on the DynamoDB table containing the locks:
 
-- `GetItem`
-- `PutItem`
-- `UpdateItem`
-- `DeleteItem`
+- `dynamodb:GetItem`
+- `dynamodb:PutItem`
+- `dynamodb:UpdateItem`
+- `dynamodb:DeleteItem`
 
-## Random sleep and jitter like behavior
+### Creating The Table
 
-For use cases where the locking client is not atomic/fast enough, you can include a randomized sleep (with upper bound) to have jitter like behavior and stagger other execution when the task begins. Similarly, you can hold the lock after task completion to avoid other executions from acquiring the lock again. Examples
+AWS CLI
 
-```
-Usage:
-  lock-exec run [flags]
-
-Flags:
-  -c, --command string           Shell Command (required)
-  -h, --help                     help for run
-  -l, --hold-lock int            Adds a sleep after running the command and before releasing the lock.
-  -s, --sleep-start-random int   Adds a randomized sleep before running the command to add jitter like effect. Value in seconds and is the upper bound for the randomized sleep duration.
-
-Global Flags:
-  -k, --key string      Name of the key (required)
-  -r, --region string   AWS Region Name (default: "us-west-2") (default "us-west-2")
-  -t, --table string    Table Name (default: "lock-exec") (default "lock-exec")
-
-```
-#### Randomized sleep
-
-```
-lock-exec run-k job-runner-foo -r "us-west-2" -t "lock-exec" -c "/usr/local/bin/do-something" -s 10 // seconds
+```shell
+aws dynamodb create-table --table-name lock-exec \
+  --table-class STANDARD \
+  --billing-mode PAY_PER_REQUEST \
+  --key-schema AttributeName=id,KeyType=HASH
+  --attribute-definitions AttributeName=id,AttributeType=S
 ```
 
-#### Holding lock post completion
+Terraform
 
+```hcl
+resource "aws_dynamodb_table" "lock_exec" {
+  name = "lock-exec"
+
+  table_class  = "STANDARD"
+  billing_mode = "PAY_PER_REQUEST"
+
+  hash_key = "id"
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+}
 ```
-lock-exec run-k job-runner-foo -r "us-west-2" -t "lock-exec" -c "/usr/local/bin/do-something" -l 60 // seconds
+
+## Installation
+
+Download the `lock-exec` binary from the [releases page](https://github.com/loomhq/lock-exec/releases). You can also install using Go or Docker.
+
+```shell
+# Using Go
+go install github.com/loomhq/lock-exec@latest
+
+# Using Docker
+docker run ghcr.io/loomhq/lock-exec --help
 ```
 
-## Development & Release
+## Usage
 
-### Requirements
+Basic usage is `lock-exec run <key> <command>`.
 
-Install goreleaser
+```shell
+$ go run main.go run testkey 'echo "hello world"' -t loomctl-locks
+{"level":"info","ts":1651558192.655782,"caller":"cmd/run.go:22","msg":"running command","key":"testkey","command":"echo \"hello world\""}
+{"level":"info","ts":1651558192.944402,"caller":"cmd/run.go:33","msg":"command succeeded","key":"testkey","command":"echo \"hello world\"","output":"\"hello world\"\n"}
 ```
-brew install goreleaser/tap/goreleaser
-```
 
-### Publishing new release
-Publishing of package is managed by goreleaser.
-
-```bash
-# Tag
-git tag -a v0.1.0 -m 'v0.1.0'
-git push origin v0.1.0
-
-# release - from the root of your repository
-export GITHUB_TOKEN=<>
-goreleaser release
-```
+Once the command finishes running `lock-exec` will unlock the key. It also listens for os interrupts and unlocks the key before exiting. In the rare case where `lock-exec` exits and fails to unlock the key will remain locked for the next 24 hours. The key can manually be unlocked earlier using `lock-exec unlock <key>`.

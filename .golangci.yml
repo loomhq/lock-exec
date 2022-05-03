@@ -1,0 +1,102 @@
+linters:
+  enable:
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - containedctx
+    - contextcheck
+    - deadcode
+    - durationcheck
+    - errcheck
+    - errname
+    - errorlint
+    - exhaustive
+    - exportloopref
+    - forcetypeassert
+    - funlen
+    - gci
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - gofmt
+    - goimports
+    - gomnd
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - ireturn
+    - maintidx
+    - makezero
+    - misspell
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnil
+    - noctx
+    - nolintlint
+    - paralleltest
+    - predeclared
+    - revive
+    - staticcheck
+    - structcheck
+    - stylecheck
+    - tagliatelle
+    - tenv
+    - thelper
+    - tparallel
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - varcheck
+    - wastedassign
+    - whitespace
+    - wrapcheck
+
+linters-settings:
+  errcheck:
+    check-blank: true
+    check-type-assertions: true
+  goconst:
+    min-occurrences: 3
+  gocognit:
+    min-complexity: 20
+  gocyclo:
+    min-complexity: 20
+  gomnd:
+    settings:
+      mnd:
+        ignored-numbers: 0,1
+        ignored-functions: cobra.*,strconv.*
+  makezero:
+    always: true
+  nakedret:
+    max-func-lines: 0
+  nolintlint:
+    require-specific: true
+    allow-leading-space: false
+  whitespace:
+    multi-if: true
+    multi-func: true
+
+issues:
+  max-same-issues: 0 # unlimited
+  max-issues-per-linter: 0 # unlimited
+
+  exclude-rules:
+    - path: cmd/
+      linters:
+        - wrapcheck
+    - path: _test.go
+      linters:
+        - funlen
+        - maintidx
+        - gocognit
+        - gomnd
+        - wrapcheck

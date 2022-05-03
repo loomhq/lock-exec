@@ -6,21 +6,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	// Version is defined at compile time via -ldflags.
-	Version = "undefined1"
-)
+// newVersionCmd creates a new command that prints the version.
+func (c *cli) newVersionCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "version",
+		Short:   "print the current version",
+		Example: "lock-exec version",
+		Args:    cobra.NoArgs,
 
-// unlockCmd represents the unlock command.
-var versionkCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Print version",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println(c.version)
+		},
+	}
 
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(Version)
-	},
-}
-
-func init() {
-	rootCmd.AddCommand(versionkCmd)
+	return cmd
 }

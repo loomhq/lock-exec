@@ -1,0 +1,28 @@
+name: Validate
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18 # https://golang.org/dl/
+      - name: Hadolint
+        uses: hadolint/hadolint-action@v2.1.0
+      - name: Goreleaser Check
+        uses: goreleaser/goreleaser-action@v2.9.1
+        with:
+          args: check
+      - name: Go Mod Tidy
+        run: test -z $(go mod tidy)
+      - name: Lint
+        uses: golangci/golangci-lint-action@v3.1.0
+      - name: Test
+        run: go test -race -cover -v ./...

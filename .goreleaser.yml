@@ -1,33 +1,33 @@
+project_name: lock-exec
 before:
   hooks:
     - go mod download
-    - go generate ./...
 builds:
-  - env:
-      - CGO_ENABLED=0
-    id: lock-exec
+  - id: lock-exec
     binary: lock-exec
     goos:
-      - linux
       - darwin
+      - linux
+      - windows
     goarch:
+      - arm
+      - arm64
       - amd64
-    ldflags:
-      - -X "github.com/loomhq/lock-exec/cmd.Version={{.Version}}"
+    env:
+      - CGO_ENABLED=0
 archives:
-  - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      386: i386
-      amd64: x86_64
+  - id: lock-exec
+    format: binary
+release:
+  prerelease: auto
 checksum:
-  name_template: 'checksums.txt'
+  name_template: "checksums.txt"
 snapshot:
   name_template: "{{ .Tag }}-next"
-changelog:
-  sort: asc
-  filters:
-    exclude:
-      - '^docs:'
-      - '^test:'
+dockers:
+  - dockerfile: Dockerfile
+    image_templates:
+      - ghcr.io/loomhq/lock-exec:latest
+      - ghcr.io/loomhq/lock-exec:{{ .Version }}
+      - ghcr.io/loomhq/lock-exec:{{ .Major }}
+      - ghcr.io/loomhq/lock-exec:{{ .Major }}.{{ .Minor }}
