@@ -23,5 +23,5 @@ func (c *Client) Run(ctx context.Context, key, command string) (string, error) {
 	fields := strings.Fields(command)
 	cmdout, cmderr := exec.CommandContext(ctx, fields[0], fields[1:]...).CombinedOutput() //nolint:gosec
 
-	return string(cmdout), cmderr
+	return strings.TrimSpace(string(cmdout)), cmderr
 }
