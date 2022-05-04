@@ -1,52 +1,38 @@
 package cmd
 
 import (
-	"github.com/loomhq/lock-exec/exec"
-	"github.com/sirupsen/logrus"
+	"errors"
+
+	"github.com/loomhq/lock-exec/lock"
 	"github.com/spf13/cobra"
 )
 
-var shellCommand string
-var sleepStartRandom int
-var holdLockBy int
+// newRunCmd creates a command for running distributed commands.
+func (c *cli) newRunCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "run <key> <command>",
+		Short:   "run a command once, using dynamodb as a distributed lock table",
+		Example: "lock-exec run examplekey 'echo \"hello world\"'",
+		Args:    cobra.ExactArgs(2),
 
-// runCmd represents the run command.
-var runCmd = &cobra.Command{
-	Use:   "run",
-	Short: "Run a shell command with acquire lock",
-	Long: `Runs your supplied shell command by acquiring a lock
-from DynamoDB table. At the end of operation it releases the
-log and return exit code of the command.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		tableName, err := cmd.Flags().GetString("table")
-		if err != nil {
-			logrus.Fatal(err)
-		}
+		Run: func(cmd *cobra.Command, args []string) {
+			log := c.log.With("key", args[0], "command", args[1])
+			locker := c.newLocker()
 
-		regionName, err := cmd.Flags().GetString("region")
-		if err != nil {
-			logrus.Fatal(err)
-		}
+			log.Info("running command")
+			out, err := locker.Run(c.cmd.Context(), args[0], args[1])
+			if err != nil {
+				if errors.Is(err, lock.ErrLocked) {
+					log.Info("did not run command. key is locked")
+					return
+				}
 
-		e, err := exec.NewDynamoClient(regionName)
-		if err != nil {
-			logrus.Fatal(err)
-		}
+				log.Fatalw("command failed", "error", err, "output", out)
+			}
 
-		if err := e.Run(tableName, keyName, shellCommand, sleepStartRandom, holdLockBy); err != nil {
-			logrus.Fatal(err)
-		}
-	},
-}
-
-func init() {
-	runCmd.Flags().StringVarP(&shellCommand, "command", "c", "", "Shell Command (required)")
-	if err := runCmd.MarkFlagRequired("command"); err != nil {
-		logrus.Fatal(err)
+			log.Infow("command succeeded", "output", out)
+		},
 	}
 
-	runCmd.Flags().IntVarP(&sleepStartRandom, "sleep-start-random", "s", 0, "Adds a randomized sleep before running the command to add jitter like effect. Value in seconds and is the upper bound for the randomized sleep duration.")
-	runCmd.Flags().IntVarP(&holdLockBy, "hold-lock", "l", 0, "Adds a sleep after running the command and before releasing the lock.")
-
-	rootCmd.AddCommand(runCmd)
+	return cmd
 }

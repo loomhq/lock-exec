@@ -1,53 +1,33 @@
 package lock
 
 import (
-	"errors"
+	"context"
 	"testing"
+	"time"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/stretchr/testify/assert"
 )
 
-type mockDynamoDBClient struct {
-	dynamodbiface.DynamoDBAPI
-	deleteItemCallback func(input *dynamodb.DeleteItemInput) (*dynamodb.DeleteItemOutput, error)
-}
+func TestLock(t *testing.T) {
+	t.Parallel()
 
-func (c *mockDynamoDBClient) DeleteItem(input *dynamodb.DeleteItemInput) (*dynamodb.DeleteItemOutput, error) {
-	return c.deleteItemCallback(input)
-}
+	tc := NewTestClient(t)
+	ctx := context.Background()
 
-func TestDynamoReleaseLock(t *testing.T) {
-	t.Run("release lock pass", func(t *testing.T) {
-		client := &mockDynamoDBClient{}
-		client.deleteItemCallback = func(input *dynamodb.DeleteItemInput) (*dynamodb.DeleteItemOutput, error) {
-			assert.Equal(t, "table-foo-bar", *input.TableName)
-			assert.Equal(t, "custom-key", *input.Key["key"].S)
+	err := tc.Lock(ctx, "locktest", time.Minute)
+	assert.NoError(t, err)
 
-			return &dynamodb.DeleteItemOutput{}, nil
-		}
+	err = tc.Lock(ctx, "locktest", time.Minute)
+	assert.ErrorIs(t, err, ErrLocked)
 
-		d := Dynamo{
-			client,
-		}
+	locked, err := tc.Locked(ctx, "locktest")
+	assert.NoError(t, err)
+	assert.True(t, locked)
 
-		err := d.ReleaseLock("custom-key", "table-foo-bar")
-		assert.NoError(t, err)
-	})
+	err = tc.Unlock(ctx, "locktest")
+	assert.NoError(t, err)
 
-	t.Run("release lock fail", func(t *testing.T) {
-		client := &mockDynamoDBClient{}
-		client.deleteItemCallback = func(input *dynamodb.DeleteItemInput) (*dynamodb.DeleteItemOutput, error) {
-			return nil, awserr.New(dynamodb.ErrCodeConditionalCheckFailedException, "The conditional request failed.", errors.New("fake error"))
-		}
-
-		d := Dynamo{
-			client,
-		}
-
-		err := d.ReleaseLock("key", "table")
-		assert.Error(t, err)
-	})
+	locked, err = tc.Locked(ctx, "locktest")
+	assert.NoError(t, err)
+	assert.False(t, locked)
 }
