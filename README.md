@@ -6,7 +6,7 @@
 
 You must already be authenticated to AWS with a default region. `lock-exec` uses [`config.LoadDefaultConfig`](https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/config#LoadDefaultConfig) to load AWS credentials using the standard credential chain and does not currently support any direct method of authentication.
 
-Additionally, `lock-exec` requires a dynamodb table to use for locking. This table must have a partition key named `id` that stores the lock keys. The default table name is `lock-exec`. If you use a different table name you must specify it explictly using the `--table` flag.
+Additionally, `lock-exec` requires a dynamodb table to use for locking. This table must have a partition key named `key` that stores the lock keys. The default table name is `lock-exec`. If you use a different table name you must specify it explictly using the `--table` flag.
 
 ### Required IAM Permissions
 
@@ -25,8 +25,8 @@ AWS CLI
 aws dynamodb create-table --table-name lock-exec \
   --table-class STANDARD \
   --billing-mode PAY_PER_REQUEST \
-  --key-schema AttributeName=id,KeyType=HASH
-  --attribute-definitions AttributeName=id,AttributeType=S
+  --key-schema AttributeName=key,KeyType=HASH
+  --attribute-definitions AttributeName=key,AttributeType=S
 ```
 
 Terraform
@@ -38,10 +38,10 @@ resource "aws_dynamodb_table" "lock_exec" {
   table_class  = "STANDARD"
   billing_mode = "PAY_PER_REQUEST"
 
-  hash_key = "id"
+  hash_key = "key"
 
   attribute {
-    name = "id"
+    name = "key"
     type = "S"
   }
 }
