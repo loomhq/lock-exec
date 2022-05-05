@@ -21,7 +21,10 @@ func (c *Client) Lock(ctx context.Context, key string, expire time.Duration) err
 	_, err := c.storage.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(c.table),
 
-		ConditionExpression: aws.String("attribute_not_exists(key) OR expire < :now"),
+		ConditionExpression: aws.String("attribute_not_exists(#key) OR expire < :now"),
+		ExpressionAttributeNames: map[string]string{
+			"#key": "key",
+		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":now": &types.AttributeValueMemberN{Value: strconv.Itoa(int(now))},
 		},
