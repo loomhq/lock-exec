@@ -16,8 +16,8 @@ func TestRun(t *testing.T) {
 	ctx := context.Background()
 	wg := &sync.WaitGroup{}
 
+	wg.Add(1)
 	go func() {
-		wg.Add(1)
 		out, err := tc.Run(ctx, "locktest", "sleep 1")
 		assert.Empty(t, out)
 		assert.NoError(t, err)
