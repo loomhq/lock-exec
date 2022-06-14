@@ -18,20 +18,17 @@ func TestRun(t *testing.T) {
 
 	wg.Add(1)
 	go func() {
-		out, err := tc.Run(ctx, "locktest", "sleep 1")
-		assert.Empty(t, out)
+		err := tc.Run(ctx, "locktest", "sleep 1")
 		assert.NoError(t, err)
 		wg.Done()
 	}()
 	time.Sleep(time.Millisecond * 500)
 
-	out, err := tc.Run(ctx, "locktest", "sleep 5")
-	assert.Empty(t, out)
+	err := tc.Run(ctx, "locktest", "sleep 5")
 	assert.ErrorIs(t, err, ErrLocked)
 
-	out, err = tc.Run(ctx, "locktest", "echo hello test")
+	err = tc.Run(ctx, "locktest", "echo hello test")
 	assert.NoError(t, err)
-	assert.Equal(t, "hello test", out)
 
 	wg.Wait()
 }

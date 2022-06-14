@@ -20,17 +20,17 @@ func (c *cli) newRunCmd() *cobra.Command {
 			locker := c.newLocker()
 
 			log.Info("running command")
-			out, err := locker.Run(c.cmd.Context(), args[0], args[1])
+			err := locker.Run(c.cmd.Context(), args[0], args[1])
 			if err != nil {
 				if errors.Is(err, lock.ErrLocked) {
 					log.Info("did not run command. key is locked")
 					return
 				}
 
-				log.Fatalw("command failed", "error", err, "output", out)
+				log.Fatalw("command failed", "error", err)
 			}
 
-			log.Infow("command succeeded", "output", out)
+			log.Infow("command succeeded")
 		},
 	}
 
