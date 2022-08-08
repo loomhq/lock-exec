@@ -14,7 +14,7 @@ import (
 // of the command and the command error. If the unlock step fails the lock expires after 24 hours.
 func (c *Client) Run(ctx context.Context, key, command string) error {
 	// use context.Background here so that unlock runs even if the context is cancelled
-	defer c.Unlock(context.Background(), key) //nolint:errcheck,contextcheck
+	defer c.Unlock(context.Background(), key) //nolint:errcheck
 
 	err := c.Lock(ctx, key, time.Hour*24) //nolint:gomnd
 	if err != nil {
