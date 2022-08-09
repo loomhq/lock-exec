@@ -3,7 +3,7 @@ module github.com/loomhq/lock-exec
 go 1.19
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.16.8
+	github.com/aws/aws-sdk-go-v2 v1.16.9
 	github.com/aws/aws-sdk-go-v2/config v1.15.15
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.15.10
 	github.com/spf13/cobra v1.5.0
