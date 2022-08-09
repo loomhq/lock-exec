@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.15.10
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.8.0
-	go.uber.org/zap v1.21.0
+	go.uber.org/zap v1.22.0
 )
 
 require (
