@@ -17,7 +17,7 @@ jobs:
       - name: Install govulncheck
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
       - name: Hadolint
-        uses: hadolint/hadolint-action@v2.1.0
+        uses: hadolint/hadolint-action@v3.0.0
       - name: Goreleaser Check
         uses: goreleaser/goreleaser-action@v3.2.0
         with:
