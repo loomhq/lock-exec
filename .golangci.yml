@@ -5,7 +5,6 @@ linters:
     - bodyclose
     - containedctx
     - contextcheck
-    - deadcode
     - durationcheck
     - errcheck
     - errname
@@ -44,7 +43,6 @@ linters:
     - predeclared
     - revive
     - staticcheck
-    - structcheck
     - stylecheck
     - tagliatelle
     - tenv
@@ -54,7 +52,6 @@ linters:
     - unconvert
     - unparam
     - unused
-    - varcheck
     - wastedassign
     - whitespace
     - wrapcheck
