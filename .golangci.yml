@@ -96,4 +96,5 @@ issues:
         - maintidx
         - gocognit
         - gomnd
+        - revive
         - wrapcheck
