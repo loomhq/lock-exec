@@ -41,7 +41,6 @@ linters:
     - nolintlint
     - paralleltest
     - predeclared
-    - revive
     - staticcheck
     - stylecheck
     - tagliatelle
@@ -96,5 +95,4 @@ issues:
         - maintidx
         - gocognit
         - gomnd
-        - revive
         - wrapcheck
