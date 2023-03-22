@@ -41,7 +41,6 @@ linters:
     - nolintlint
     - paralleltest
     - predeclared
-    - revive
     - staticcheck
     - stylecheck
     - tagliatelle
