@@ -3,7 +3,7 @@ module github.com/loomhq/lock-exec
 go 1.20
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.17.6
+	github.com/aws/aws-sdk-go-v2 v1.17.7
 	github.com/aws/aws-sdk-go-v2/config v1.18.18
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.19.1
 	github.com/spf13/cobra v1.6.1
@@ -19,7 +19,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.31 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.9.11 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.7.24 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.24 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.25 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.12.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.14.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.18.6 // indirect
