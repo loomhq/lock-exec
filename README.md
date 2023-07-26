@@ -69,4 +69,4 @@ $ go run main.go run testkey 'echo "hello world"' -t loomctl-locks
 {"level":"info","ts":1651558192.944402,"caller":"cmd/run.go:33","msg":"command succeeded","key":"testkey","command":"echo \"hello world\"","output":"\"hello world\"\n"}
 ```
 
-Once the command finishes running `lock-exec` will unlock the key. It also listens for os interrupts and unlocks the key before exiting. In the rare case where `lock-exec` exits and fails to unlock the key will remain locked for the next 24 hours. The key can manually be unlocked earlier using `lock-exec unlock <key>`.
+Once the command finishes running `lock-exec` will unlock the key. It also listens for os interrupts and unlocks the key before exiting. In the rare case where `lock-exec` exits and fails to unlock the key will remain locked for the next 24 hours (you can customize this with `--expire <duration>`). The key can manually be unlocked earlier using `lock-exec unlock <key>`.
