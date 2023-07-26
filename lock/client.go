@@ -3,6 +3,7 @@ package lock
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 )
@@ -23,9 +24,19 @@ type storageI interface {
 type Client struct {
 	storage storageI
 	table   string
+	expire  time.Duration
 }
 
 // New creates a new lock client.
 func New(ddb storageI, table string) *Client {
-	return &Client{storage: ddb, table: table}
+	return &Client{
+		storage: ddb,
+		table:   table,
+		expire:  time.Hour * 24, //nolint:gomnd
+	}
+}
+
+// SetExpire sets the default expire duration for locks. Defaults to 24 hours if not set.
+func (c *Client) SetExpire(d time.Duration) {
+	c.expire = d
 }

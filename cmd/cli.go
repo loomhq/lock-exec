@@ -6,6 +6,7 @@ import (
 	"log"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -22,6 +23,7 @@ type cli struct {
 	log *zap.SugaredLogger
 
 	table   string
+	expire  time.Duration
 	version string
 }
 

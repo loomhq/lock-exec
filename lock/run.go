@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"time"
 )
 
 // Run acquires a lock under the specified key, executes the command, and then unlocks the key.
@@ -16,7 +15,7 @@ func (c *Client) Run(ctx context.Context, key, command string) error {
 	// use context.Background here so that unlock runs even if the context is cancelled
 	defer c.Unlock(context.Background(), key) //nolint:errcheck,contextcheck
 
-	err := c.Lock(ctx, key, time.Hour*24) //nolint:gomnd
+	err := c.Lock(ctx, key, c.expire)
 	if err != nil {
 		return fmt.Errorf("lock failed: %w", err)
 	}

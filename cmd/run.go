@@ -18,6 +18,7 @@ func (c *cli) newRunCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			log := c.log.With("key", args[0], "command", args[1])
 			locker := c.newLocker()
+			locker.SetExpire(c.expire)
 
 			log.Info("running command")
 			err := locker.Run(c.cmd.Context(), args[0], args[1])
