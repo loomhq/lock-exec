@@ -25,7 +25,7 @@ jobs:
       - name: Go Mod Tidy
         run: test -z $(go mod tidy)
       - name: Lint
-        uses: golangci/golangci-lint-action@v3.7.0
+        uses: golangci/golangci-lint-action@v4.0.0
       - name: Test
         run: go test -race -cover -v ./...
       - name: Run govulncheck
