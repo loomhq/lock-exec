@@ -23,7 +23,6 @@ linters:
     - godot
     - gofmt
     - goimports
-    - gomnd
     - goprintffuncname
     - gosec
     - gosimple
@@ -33,6 +32,7 @@ linters:
     - maintidx
     - makezero
     - misspell
+    - mnd
     - nakedret
     - nestif
     - nilerr
@@ -65,18 +65,15 @@ linters-settings:
     min-complexity: 20
   gocyclo:
     min-complexity: 20
-  gomnd:
-    settings:
-      mnd:
-        ignored-numbers: 0,1
-        ignored-functions: cobra.*,strconv.*
+  mnd:
+    ignored-numbers: ["0", "1"]
+    ignored-functions: ["cobra.*", "strconv.*"]
   makezero:
     always: true
   nakedret:
     max-func-lines: 0
   nolintlint:
     require-specific: true
-    allow-leading-space: false
   whitespace:
     multi-if: true
     multi-func: true
@@ -94,5 +91,5 @@ issues:
         - funlen
         - maintidx
         - gocognit
-        - gomnd
+        - mnd
         - wrapcheck
