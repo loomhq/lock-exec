@@ -32,7 +32,7 @@ func New(ddb storageI, table string) *Client {
 	return &Client{
 		storage: ddb,
 		table:   table,
-		expire:  time.Hour * 24, //nolint:gomnd
+		expire:  time.Hour * 24, //nolint:mnd
 	}
 }
 
