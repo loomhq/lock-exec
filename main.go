@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/loomhq/lock-exec/cmd"
+	"github.com/loomhq/lock-exec/v2/cmd"
 )
 
 // version is populated at build time by goreleaser.

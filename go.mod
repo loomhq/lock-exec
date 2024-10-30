@@ -1,4 +1,4 @@
-module github.com/loomhq/lock-exec
+module github.com/loomhq/lock-exec/v2
 
 go 1.21
 
