@@ -16,6 +16,7 @@ func (c *cli) newRootCmd() *cobra.Command {
 		DisableAutoGenTag: true,
 	}
 
+	cmd.PersistentFlags().StringVarP(&c.region, "region", "r", "", "override region to use for dynamodb table")
 	cmd.PersistentFlags().StringVarP(&c.table, "table", "t", "lock-exec", "table name in dynamodb to use for locking")
 	cmd.PersistentFlags().DurationVarP(&c.expire, "expire", "e", time.Hour*24, "lock duration in the event that the post-run unlock fails") //nolint:mnd
 

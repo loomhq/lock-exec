@@ -8,7 +8,12 @@ import (
 
 // newLocker returns a new lock client or logs and exits on failure.
 func (c *cli) newLocker() *lock.Client {
-	cfg, err := config.LoadDefaultConfig(c.cmd.Context())
+	options := [](func(*config.LoadOptions) error)(nil)
+	if r := c.region; r != "" {
+		options = append(options, config.WithRegion(r))
+	}
+
+	cfg, err := config.LoadDefaultConfig(c.cmd.Context(), options...)
 	c.fatalErr(err, "failed to load aws config")
 
 	return lock.New(dynamodb.NewFromConfig(cfg), c.table)

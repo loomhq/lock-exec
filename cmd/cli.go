@@ -22,6 +22,7 @@ type cli struct {
 	cmd *cobra.Command
 	log *zap.SugaredLogger
 
+	region  string
 	table   string
 	expire  time.Duration
 	version string
