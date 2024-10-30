@@ -24,6 +24,7 @@ type cli struct {
 
 	table   string
 	expire  time.Duration
+	global  bool
 	version string
 }
 
