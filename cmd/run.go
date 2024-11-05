@@ -3,7 +3,7 @@ package cmd
 import (
 	"errors"
 
-	"github.com/loomhq/lock-exec/lock"
+	"github.com/loomhq/lock-exec/v2/lock"
 	"github.com/spf13/cobra"
 )
 

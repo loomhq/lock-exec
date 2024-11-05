@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/loomhq/lock-exec/lock"
+	"github.com/loomhq/lock-exec/v2/lock"
 )
 
 // newLocker returns a new lock client or logs and exits on failure.
