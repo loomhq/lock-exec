@@ -53,7 +53,7 @@ Download the `lock-exec` binary from the [releases page](https://github.com/loom
 
 ```shell
 # Using Go
-go install github.com/loomhq/lock-exec@latest
+go install github.com/loomhq/lock-exec/v2@latest
 
 # Using Docker
 docker run ghcr.io/loomhq/lock-exec --help
@@ -70,3 +70,10 @@ $ go run main.go run testkey 'echo "hello world"' -t loomctl-locks
 ```
 
 Once the command finishes running `lock-exec` will unlock the key. It also listens for os interrupts and unlocks the key before exiting. In the rare case where `lock-exec` exits and fails to unlock the key will remain locked for the next 24 hours (you can customize this with `--expire <duration>`). The key can manually be unlocked earlier using `lock-exec unlock <key>`.
+
+## Package
+
+The `lock` package can be utilized independently of the CLI tool. The package can be imported into a Go project using go get.
+```shell
+go get github.com/loomhq/lock-exec/v2
+```
