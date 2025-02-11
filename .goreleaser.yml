@@ -18,7 +18,8 @@ builds:
       - CGO_ENABLED=0
 archives:
   - id: lock-exec
-    format: binary
+    formats:
+      - binary
 release:
   prerelease: auto
 checksum:
