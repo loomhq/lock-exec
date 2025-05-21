@@ -1,95 +1,195 @@
+version: "2"
 linters:
   enable:
+    - asasalint
     - asciicheck
     - bidichk
     - bodyclose
+    - canonicalheader
     - containedctx
     - contextcheck
     - copyloopvar
+    - cyclop
+    - decorder
+    - dupl
     - durationcheck
     - errcheck
     - errname
     - errorlint
     - exhaustive
+    - fatcontext
+    - forbidigo
     - forcetypeassert
     - funlen
-    - gci
+    - gocheckcompilerdirectives
     - gochecknoglobals
     - gochecknoinits
+    - gochecksumtype
     - gocognit
     - goconst
     - gocritic
     - gocyclo
     - godot
-    - gofmt
-    - goimports
+    - goheader
+    - gomodguard
     - goprintffuncname
     - gosec
-    - gosimple
     - govet
+    - iface
     - ineffassign
+    - intrange
     - ireturn
+    - lll
+    - loggercheck
     - maintidx
     - makezero
+    - mirror
     - misspell
     - mnd
+    - musttag
     - nakedret
     - nestif
     - nilerr
     - nilnil
+    - nlreturn
     - noctx
     - nolintlint
+    - nonamedreturns
+    - nosprintfhostport
     - paralleltest
+    - perfsprint
     - predeclared
+    - promlinter
+    - protogetter
+    - reassign
+    - recvcheck
+    - revive
+    - rowserrcheck
+    - sloglint
+    - spancheck
+    - sqlclosecheck
     - staticcheck
-    - stylecheck
+    - tagalign
     - tagliatelle
+    - testableexamples
+    - testifylint
+    - testpackage
     - thelper
     - tparallel
-    - typecheck
     - unconvert
     - unparam
     - unused
+    - usestdlibvars
     - usetesting
     - wastedassign
     - whitespace
     - wrapcheck
-
-linters-settings:
-  errcheck:
-    check-blank: true
-    check-type-assertions: true
-  goconst:
-    min-occurrences: 3
-  gocognit:
-    min-complexity: 20
-  gocyclo:
-    min-complexity: 20
-  mnd:
-    ignored-numbers: ["0", "1"]
-    ignored-functions: ["cobra.*", "strconv.*"]
-  makezero:
-    always: true
-  nakedret:
-    max-func-lines: 0
-  nolintlint:
-    require-specific: true
-  whitespace:
-    multi-if: true
-    multi-func: true
-
+  settings:
+    cyclop:
+      max-complexity: 30
+      package-average: 10
+    errcheck:
+      check-blank: true
+      check-type-assertions: true
+    exhaustive:
+      check:
+        - switch
+        - map
+    funlen:
+      lines: 100
+      statements: 50
+      ignore-comments: true
+    gocognit:
+      min-complexity: 20
+    goconst:
+      min-occurrences: 3
+    gocyclo:
+      min-complexity: 20
+    gochecksumtype:
+      default-signifies-exhaustive: false
+    gocritic:
+      settings:
+        captLocal:
+          paramsOnly: false
+        underef:
+          skipRecvDeref: false
+    govet:
+      disable:
+        - fieldalignment
+      enable-all: true
+    ireturn:
+      allow:
+        - anon
+        - error
+        - empty
+        - stdlib
+        - sigs.k8s.io/controller-runtime/pkg/client.Client
+    lll:
+      line-length: 140
+    mnd:
+      ignored-numbers:
+        - "0"
+        - "1"
+        - "2"
+      ignored-functions:
+        - cobra.*
+        - strconv.*
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+    perfsprint:
+      strconcat: false
+    sloglint:
+      no-global: all
+      context: scope
+    whitespace:
+      multi-if: false
+      multi-func: false
+    wrapcheck:
+      ignore-package-globs:
+        - github.com/loomhq/*
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - godot
+        source: (noinspection|TODO)
+      - linters:
+          - gocritic
+        source: //noinspection
+      - linters:
+          - bodyclose
+          - dupl
+          - errcheck
+          - funlen
+          - gocognit
+          - goconst
+          - gosec
+          - maintidx
+          - mnd
+          - noctx
+          - wrapcheck
+        path: _test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 issues:
-  max-same-issues: 0 # unlimited
-  max-issues-per-linter: 0 # unlimited
-
-  exclude-rules:
-    - path: cmd/
-      linters:
-        - wrapcheck
-    - path: _test.go
-      linters:
-        - funlen
-        - maintidx
-        - gocognit
-        - mnd
-        - wrapcheck
+  max-issues-per-linter: 0
+  max-same-issues: 0
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
