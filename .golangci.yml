@@ -1,3 +1,4 @@
+version: "2"
 linters:
   enable:
     - asciicheck
@@ -7,13 +8,11 @@ linters:
     - contextcheck
     - copyloopvar
     - durationcheck
-    - errcheck
     - errname
     - errorlint
     - exhaustive
     - forcetypeassert
     - funlen
-    - gci
     - gochecknoglobals
     - gochecknoinits
     - gocognit
@@ -21,13 +20,8 @@ linters:
     - gocritic
     - gocyclo
     - godot
-    - gofmt
-    - goimports
     - goprintffuncname
     - gosec
-    - gosimple
-    - govet
-    - ineffassign
     - ireturn
     - maintidx
     - makezero
@@ -42,54 +36,74 @@ linters:
     - paralleltest
     - predeclared
     - staticcheck
-    - stylecheck
     - tagliatelle
     - thelper
     - tparallel
-    - typecheck
     - unconvert
     - unparam
-    - unused
     - usetesting
     - wastedassign
     - whitespace
     - wrapcheck
-
-linters-settings:
-  errcheck:
-    check-blank: true
-    check-type-assertions: true
-  goconst:
-    min-occurrences: 3
-  gocognit:
-    min-complexity: 20
-  gocyclo:
-    min-complexity: 20
-  mnd:
-    ignored-numbers: ["0", "1"]
-    ignored-functions: ["cobra.*", "strconv.*"]
-  makezero:
-    always: true
-  nakedret:
-    max-func-lines: 0
-  nolintlint:
-    require-specific: true
-  whitespace:
-    multi-if: true
-    multi-func: true
-
+  settings:
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+    gocognit:
+      min-complexity: 20
+    goconst:
+      min-occurrences: 3
+    gocyclo:
+      min-complexity: 20
+    makezero:
+      always: true
+    mnd:
+      ignored-numbers:
+        - "0"
+        - "1"
+      ignored-functions:
+        - cobra.*
+        - strconv.*
+    nakedret:
+      max-func-lines: 0
+    nolintlint:
+      require-specific: true
+    whitespace:
+      multi-if: true
+      multi-func: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - wrapcheck
+        path: cmd/
+      - linters:
+          - funlen
+          - gocognit
+          - maintidx
+          - mnd
+          - wrapcheck
+        path: _test.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 issues:
-  max-same-issues: 0 # unlimited
-  max-issues-per-linter: 0 # unlimited
-
-  exclude-rules:
-    - path: cmd/
-      linters:
-        - wrapcheck
-    - path: _test.go
-      linters:
-        - funlen
-        - maintidx
-        - gocognit
-        - mnd
-        - wrapcheck
+  max-issues-per-linter: 0
+  max-same-issues: 0
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
