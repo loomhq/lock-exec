@@ -12,14 +12,13 @@ import (
 // Returns ErrLocked if the key is already locked. Otherwise returns combined stdout and stderr
 // of the command and the command error. If the unlock step fails the lock expires after 24 hours.
 func (c *Client) Run(ctx context.Context, key, command string) error {
-	// use context.Background here so that unlock runs even if the context is cancelled
-	defer c.Unlock(context.Background(), key) //nolint:errcheck,contextcheck
-
 	err := c.Lock(ctx, key, c.expire)
 	if err != nil {
 		return fmt.Errorf("lock failed: %w", err)
 	}
-
+	// use context.Background here so that unlock runs even if the context is cancelled
+	defer c.Unlock(context.Background(), key) //nolint:errcheck,contextcheck
+	
 	// Build command
 	fields := strings.Fields(command)
 	cmd := exec.CommandContext(ctx, fields[0], fields[1:]...) //nolint:gosec
