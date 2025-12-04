@@ -18,7 +18,7 @@ func (c *Client) Run(ctx context.Context, key, command string) error {
 	}
 	// use context.Background here so that unlock runs even if the context is cancelled
 	defer c.Unlock(context.Background(), key) //nolint:errcheck,contextcheck
-	
+
 	// Build command
 	fields := strings.Fields(command)
 	cmd := exec.CommandContext(ctx, fields[0], fields[1:]...) //nolint:gosec

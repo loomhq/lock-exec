@@ -27,8 +27,8 @@ func TestRun(t *testing.T) {
 	err := tc.Run(ctx, "locktest", "sleep 5")
 	assert.ErrorIs(t, err, ErrLocked)
 
+	wg.Wait()
+
 	err = tc.Run(ctx, "locktest", "echo hello test")
 	assert.NoError(t, err)
-
-	wg.Wait()
 }
