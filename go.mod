@@ -2,7 +2,7 @@ module github.com/loomhq/lock-exec/v2
 
 go 1.23
 
-toolchain go1.25.5
+toolchain go1.26.0
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.41.1
