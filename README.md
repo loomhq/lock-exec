@@ -17,6 +17,7 @@ The following IAM permissions are required on the DynamoDB table containing the 
 - `dynamodb:UpdateItem`
 - `dynamodb:DeleteItem`
 
+
 ### Creating The Table
 
 AWS CLI
