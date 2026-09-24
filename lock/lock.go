@@ -12,6 +12,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
+// attrKey is the name of the table attribute that holds the lock key.
+const attrKey = "key"
+
 // Lock creates a new lock with "key" as a unique identifier. The lock will expire after the
 // specified duration. Returns ErrLocked if the lock already exists and has not expired.
 func (c *Client) Lock(ctx context.Context, key string, expire time.Duration) error {
@@ -23,14 +26,14 @@ func (c *Client) Lock(ctx context.Context, key string, expire time.Duration) err
 
 		ConditionExpression: aws.String("attribute_not_exists(#key) OR expire < :now"),
 		ExpressionAttributeNames: map[string]string{
-			"#key": "key",
+			"#key": attrKey,
 		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":now": &types.AttributeValueMemberN{Value: strconv.Itoa(int(now))},
 		},
 
 		Item: map[string]types.AttributeValue{
-			"key":    &types.AttributeValueMemberS{Value: key},
+			attrKey:  &types.AttributeValueMemberS{Value: key},
 			"expire": &types.AttributeValueMemberN{Value: strconv.Itoa(int(expireat))},
 		},
 	})
@@ -52,7 +55,7 @@ func (c *Client) Unlock(ctx context.Context, key string) error {
 		TableName: aws.String(c.table),
 
 		Key: map[string]types.AttributeValue{
-			"key": &types.AttributeValueMemberS{Value: key},
+			attrKey: &types.AttributeValueMemberS{Value: key},
 		},
 	})
 	if err != nil {
@@ -69,7 +72,7 @@ func (c *Client) Locked(ctx context.Context, key string) (bool, error) {
 		ConsistentRead: aws.Bool(true),
 
 		Key: map[string]types.AttributeValue{
-			"key": &types.AttributeValueMemberS{Value: key},
+			attrKey: &types.AttributeValueMemberS{Value: key},
 		},
 	})
 	if err != nil {
