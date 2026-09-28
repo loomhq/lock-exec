@@ -26,6 +26,12 @@ type cli struct {
 	table   string
 	expire  time.Duration
 	version string
+
+	backend        string
+	ersEndpoint    string
+	ersPartitionID string
+	ersEnv         string
+	ersRegion      string
 }
 
 // Execute runs a standard CLI and can be called externally.
