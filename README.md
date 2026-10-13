@@ -89,11 +89,14 @@ Flags:
 - `--backend dynamodb|ers` (default `dynamodb`)
 - `--ers-env local|staging|production` (default `local`) -- which ERS to use. For `staging` and
   `production` this sets the endpoint (the `istio-egress-internal` gateway) and the ERS
-  service-gateway host (`ers-data.sgw.staging.atl-paas.net` or `ers-data.sgw.prod.atl-paas.net`)
+  service-gateway host (`ers-data.sgw.staging.atl-paas.net` or `ers-data.sgw.prod.atl-paas.net`,
+  unless `--ers-shard` names a non-default shard)
 - `--ers-partition-id` -- the partition to write locks into. Required for `staging`/`production`;
   defaults to `tdp-ers-local` (the local dev seed) for `local`
-- `--ers-region` -- the **partition's** ERS region, e.g. `stg-west2`. Required for
+- `--ers-region` -- the **partition's** ERS region, e.g. `stg-west2` or `prod-west2`. Required for
   `staging`/`production`
+- `--ers-shard` -- the **partition's** ERS shard, e.g. `ers-data-prod-west2-1`. Only needed when the
+  partition isn't on its region's default shard (`ers-data-<region>`); see **Shards** below
 - `--ers-endpoint` -- optional override for the ERS base URL (defaults to
   `http://localhost:9300` for `local`; see **Local development** below)
 
@@ -111,12 +114,13 @@ $ atlas tdp get-partitions -n lock-exec-stg-west2 -e staging -s loom -d ers
 └─────────┴─────────────┴────────────────────────────────────────┴───────────────────────────────────────────┴──────────────────────┘
 ```
 
-Take two values from that row:
+Take these values from that row:
 
 | Column | Flag |
 |---|---|
 | `partitionId` | `--ers-partition-id` |
 | `environment` | `--ers-region` |
+| `productShardName` | `--ers-shard` (only if it isn't `ers-data-<environment>`) |
 
 **2. Run `lock-exec`** from a pod on a staging cluster. Requests go through the
 `istio-egress-internal` gateway, which authenticates them as `loom/loom`:
@@ -138,6 +142,33 @@ environment passes the same value (for staging, `stg-west2`), whether it runs in
 
 This requires `ers-data.sgw.staging.atl-paas.net` in the cluster's `istio-egress-internal`
 allowlist (`infra-apps`).
+
+### Shards
+
+Each ERS region has a default shard, `ers-data-<region>` (e.g. `ers-data-stg-west2`), reached
+through `ers-data.sgw.<staging|prod>.atl-paas.net`. Some regions have extra shards (e.g.
+`ers-data-prod-west2-1`), each with its own host, `<shard>.sgw.<staging|prod>.atl-paas.net`. A
+partition can only be used through its own shard, so for a partition on a non-default shard pass
+`--ers-shard`:
+
+```shell
+lock-exec run --backend=ers \
+  --ers-env=production \
+  --ers-partition-id=5137b20e-8af9-399f-9500-24cc60c309ab \
+  --ers-region=prod-west2 \
+  --ers-shard=ers-data-prod-west2-1 \
+  mykey 'echo "hello world"'
+```
+
+`--ers-region` stays the region (`prod-west2`), not the shard. Typical errors when these are
+wrong:
+
+- `422 INVALID_PARTITION_SHARD_FOR_OPERATION`: the request reached the wrong shard, usually because
+  `--ers-shard` is missing.
+- `503 no healthy upstream`: the service gateway has no deployment for that host and region, e.g.
+  `--ers-region` was set to a shard name like `prod-west2-1`.
+
+The shard's host must also be in the cluster's `istio-egress-internal` allowlist.
 
 ### Local development
 
@@ -172,9 +203,9 @@ go test -tags ers_integration ./ers/... -v
 
 - All clusters that share a lock key must use the same `--backend`. Locks in DynamoDB and ERS
   are separate, so mixing backends for one key lets a job run more than once.
-- Staging only for now. Production needs its own partition and schema deployment in
-  `loom-tdp-artifacts`, and `ers-data.sgw.prod.atl-paas.net` added to the production egress
-  allowlist.
+- Production's partition (`lock-exec-prod-west2`) is on shard `ers-data-prod-west2-1`, so production
+  needs `--ers-shard=ers-data-prod-west2-1` and `ers-data-prod-west2-1.sgw.prod.atl-paas.net` in the
+  production egress allowlist.
 - See `load-exec-project-scoping.md` in `infra-terraform` for the full migration plan, rollout
   phases, and design rationale.
 

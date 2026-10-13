@@ -32,6 +32,7 @@ type cli struct {
 	ersPartitionID string
 	ersEnv         string
 	ersRegion      string
+	ersShard       string
 }
 
 // Execute runs a standard CLI and can be called externally.

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -48,22 +49,65 @@ const (
 	ersGatewayEndpoint = "http://istio-egress-internal.istio-egress-internal.svc.cluster.local"
 )
 
-// ersHost returns the ERS service-gateway host for --ers-env, and false for an unknown
-// environment. Note "prod", not "production", in the production host.
-func ersHost(env string) (string, bool) {
+// ersDefaultService is the micros service behind each region's default ERS shard
+// (ers-data-<region>, e.g. ers-data-stg-west2), and the service-gateway host prefix for it.
+const ersDefaultService = "ers-data"
+
+// ersShardPattern matches ERS shard names: "ers-data" optionally followed by hyphenated
+// lowercase alphanumeric parts, e.g. ers-data-prod-west2 or ers-data-prod-west2-1. The shard
+// becomes part of the service-gateway host, so nothing else is accepted.
+var ersShardPattern = regexp.MustCompile(`^ers-data(-[a-z0-9]+)*$`)
+
+// ersOptions holds the --ers-* flags.
+type ersOptions struct {
+	env         string
+	endpoint    string
+	partitionID string
+	region      string
+	shard       string
+}
+
+// ersHost returns the ERS service-gateway host for env and the partition's shard and region, and
+// an error for an unknown environment or an invalid shard. Note "prod", not "production", in the
+// production host.
+//
+// Each region has a default shard named ers-data-<region> (e.g. ers-data-stg-west2), served by
+// the "ers-data" micros service and reached through ers-data.sgw.<env>.atl-paas.net. Some
+// regions have extra shards (e.g. ers-data-prod-west2-1): each is its own micros service with its
+// own host, <shard>.sgw.<env>.atl-paas.net. A partition can only be read or written through its
+// own shard. Going through the default host returns 422 INVALID_PARTITION_SHARD_FOR_OPERATION.
+func ersHost(env, shard, region string) (string, error) {
+	var suffix string
+
 	switch env {
 	case "staging":
-		return "ers-data.sgw.staging.atl-paas.net", true
+		suffix = ".sgw.staging.atl-paas.net"
 	case "production":
-		return "ers-data.sgw.prod.atl-paas.net", true
+		suffix = ".sgw.prod.atl-paas.net"
 	default:
-		return "", false
+		return "", fmt.Errorf("unknown --ers-env %q, expected local, staging or production", env)
 	}
+
+	if shard == "" || shard == ersDefaultService+"-"+region {
+		return ersDefaultService + suffix, nil
+	}
+
+	if !ersShardPattern.MatchString(shard) {
+		return "", fmt.Errorf("invalid --ers-shard %q, expected an ERS shard name such as ers-data-prod-west2-1", shard)
+	}
+
+	return shard + suffix, nil
 }
 
 // newERSStorage builds the ERS-backed storage client.
 func (c *cli) newERSStorage() *ers.Storage {
-	endpoint, headers, err := ersConfig(c.ersEnv, c.ersEndpoint, c.ersPartitionID, c.ersRegion)
+	endpoint, headers, err := ersConfig(ersOptions{
+		env:         c.ersEnv,
+		endpoint:    c.ersEndpoint,
+		partitionID: c.ersPartitionID,
+		region:      c.ersRegion,
+		shard:       c.ersShard,
+	})
 	c.fatalErr(err, "invalid ERS flags")
 
 	client := ers.NewClient(nil, endpoint, ers.SchemaType, ers.SchemaVersion, headers)
@@ -73,15 +117,19 @@ func (c *cli) newERSStorage() *ers.Storage {
 // ersConfig resolves the ERS endpoint and headers from the flags.
 //
 // env is "local" (ERS-in-a-box), "staging" or "production". The endpoint (unless overridden)
-// and the service-gateway host follow from env. The partition ID and region don't: both
-// describe the partition, so they must be passed explicitly for staging and production, and
-// they're the same for every cluster, whatever region the cluster itself is in.
-func ersConfig(env, endpoint, partitionID, region string) (string, map[string]string, error) {
-	if env == "" || env == "local" {
+// follows from env. The partition ID, region and shard don't: they describe the partition, so
+// the ID and region must be passed explicitly for staging and production (the shard only for a
+// partition outside the region's default shard), and they're the same for every cluster, whatever
+// region the cluster itself is in. region and shard are ignored for local.
+func ersConfig(opts ersOptions) (string, map[string]string, error) {
+	endpoint := opts.endpoint
+
+	if opts.env == "" || opts.env == "local" {
 		if endpoint == "" {
 			endpoint = ersLocalEndpoint
 		}
 
+		partitionID := opts.partitionID
 		if partitionID == "" {
 			partitionID = ersLocalPartitionID
 		}
@@ -89,20 +137,20 @@ func ersConfig(env, endpoint, partitionID, region string) (string, map[string]st
 		return endpoint, ers.NewLocalDevHeaders(partitionID), nil
 	}
 
-	host, ok := ersHost(env)
-	if !ok {
-		return "", nil, fmt.Errorf("unknown --ers-env %q, expected local, staging or production", env)
+	host, err := ersHost(opts.env, opts.shard, opts.region)
+	if err != nil {
+		return "", nil, err
 	}
 
-	if partitionID == "" || region == "" {
-		return "", nil, fmt.Errorf("--ers-partition-id and --ers-region are required for --ers-env=%s", env)
+	if opts.partitionID == "" || opts.region == "" {
+		return "", nil, fmt.Errorf("--ers-partition-id and --ers-region are required for --ers-env=%s", opts.env)
 	}
 
 	if endpoint == "" {
 		endpoint = ersGatewayEndpoint
 	}
 
-	return endpoint, ers.NewProductionHeaders(host, partitionID, region), nil
+	return endpoint, ers.NewProductionHeaders(host, opts.partitionID, opts.region), nil
 }
 
 // fatalErr logs the message and error and then exits if the error is not nil.

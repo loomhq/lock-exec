@@ -127,13 +127,16 @@ func NewLocalDevHeaders(partitionID string) map[string]string {
 // Verified against real staging ERS from staging-olive (see load-exec-project-scoping.md
 // Section 19 in infra-terraform):
 //
-//   - host: the ERS service-gateway host, "ers-data.sgw.staging.atl-paas.net" or
-//     "ers-data.sgw.prod.atl-paas.net". It must be in the mesh's egressHosts allowlist.
-//     Don't use atlassian-proxy: that's the tenant-routed (PMR) entry point, which requires
-//     a workspace sharding context that locks don't have.
+//   - host: the service-gateway host of the partition's ERS shard. That's
+//     "ers-data.sgw.staging.atl-paas.net" or "ers-data.sgw.prod.atl-paas.net" for a region's
+//     default shard (ers-data-<region>), and "<shard>.sgw.<staging|prod>.atl-paas.net" for any
+//     other shard, e.g. "ers-data-prod-west2-1.sgw.prod.atl-paas.net". It must be in the mesh's
+//     egressHosts allowlist. Don't use atlassian-proxy: that's the tenant-routed (PMR) entry
+//     point, which requires a workspace sharding context that locks don't have.
 //   - partitionID: the non-tenanted partition that holds lock records.
-//   - region: the partition's ERS region, e.g. "stg-west2" (the "environment" column of
-//     `atlas tdp get-partitions`). The service gateway needs it to route to the right shard.
+//   - region: the partition's ERS region, e.g. "stg-west2" or "prod-west2" (the "environment"
+//     column of `atlas tdp get-partitions`), never a shard name like "prod-west2-1". The service
+//     gateway uses it, together with host, to route to the shard's deployment in that region.
 func NewProductionHeaders(host, partitionID, region string) map[string]string {
 	return map[string]string{
 		"X-Atlassian-Host":                 host,
